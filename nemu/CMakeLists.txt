@@ -46,8 +46,30 @@ set(NEMU_SOURCE_FILES
         src/monitor/monitor.c
         src/main.c)
 
-include_directories(include)
 
-add_executable(nemu ${NEMU_SOURCE_FILES})
+set(FLEX_SOURCE ${CMAKE_CURRENT_BINARY_DIR}/eval-flex.c)
+set(FLEX_HEADER ${CMAKE_CURRENT_BINARY_DIR}/eval-flex.h)
+find_package(FLEX)
+FLEX_TARGET(
+        Lexer src/monitor/debug/eval.l
+        ${FLEX_SOURCE}
+        COMPILE_FLAGS "-R --bison-bridge --header-file=${FLEX_HEADER}")
 
-target_link_libraries(nemu readline)
+
+set(BISON_SOURCE ${CMAKE_CURRENT_BINARY_DIR}/eval-parse.c)
+set(BISON_HEADER ${CMAKE_CURRENT_BINARY_DIR}/eval-parse.h)
+find_package(BISON)
+BISON_TARGET(
+        Parser src/monitor/debug/eval.y
+        ${BISON_SOURCE}
+        COMPILE_FLAGS "-d -v -y --debug --defines=${BISON_HEADER}")
+
+
+include_directories(include ${CMAKE_CURRENT_BINARY_DIR})
+
+add_executable(nemu
+        ${NEMU_SOURCE_FILES}
+        ${FLEX_Lexer_OUTPUTS}
+        ${BISON_Parser_OUTPUTS})
+
+target_link_libraries(nemu readline l)

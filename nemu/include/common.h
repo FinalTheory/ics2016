@@ -35,4 +35,6 @@ typedef union {
 #define false 0
 #define true 1
 
+#define YYSTYPE int32_t
+
 #endif
