@@ -1,6 +1,5 @@
-*.*
-*
-!*/
+.idea/
+obj/
 !Makefile*
 !*.[cSh]
 !test.sh
