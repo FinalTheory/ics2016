@@ -42,3 +42,38 @@ void reg_test() {
 	assert(eip_sample == cpu.eip);
 }
 
+static inline
+int count_bits(uint8_t v) {
+	int i, res = 0;
+	for (i = 0; i < 8; i++) {
+		if ((v >> i) & 0x01) { res++; }
+	}
+	return res;
+}
+
+int uadd_ok(uint32_t x, uint32_t y) {
+	uint32_t sum = x + y;
+	return sum >= x;
+}
+
+int tadd_ok(int32_t x, int32_t y) {
+	int32_t sum = x + y;
+	int neg_over = x < 0 && y < 0 && sum >= 0;
+	int pos_over = x >= 0 && y >= 0 && sum < 0;
+	return !neg_over && !pos_over;
+}
+
+void update_PF_ZF_SF(uint32_t res, int data_byte) {
+	if (data_byte != 1 &&
+		data_byte != 2 &&
+		data_byte != 4) {
+		Assert(false, "DATA_TYPE should be 1, 2 or 4.");
+	}
+	int data_bits = data_byte * 8;
+	// PF
+	cpu.eflags.PF = (uint8_t)!(count_bits((uint8_t)res) % 2);
+	// ZF
+	cpu.eflags.ZF = (uint8_t)(res == 0);
+	// SF
+	cpu.eflags.SF = (uint8_t)((res >> (data_bits - 1)) & 0x01);
+}

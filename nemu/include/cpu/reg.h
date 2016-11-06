@@ -26,10 +26,38 @@ typedef struct {
 			uint32_t eax, ecx, edx, ebx, esp, ebp, esi, edi;
 		};
 	};
-	swaddr_t eip;
+	uint32_t eip;
+	union {
+		struct {
+			// Carry flag
+			uint8_t CF			:1;
+			uint8_t unused0		:1;
+			// Parity flag
+			uint8_t PF			:1;
+			uint8_t unused1		:1;
+			uint8_t unused2		:1;
+			uint8_t unused3		:1;
+			// Zero flag
+			uint8_t ZF			:1;
+			// Sign flag
+			uint8_t SF			:1;
+			uint8_t unused4		:1;
+			// Interrupt enable flag
+			uint8_t IF			:1;
+			// For MOVS, CMPS, SCAS, LODS and STOS
+			uint8_t DF			:1;
+			// Overflow flag
+			uint8_t OF			:1;
+		};
+		uint32_t val;
+	} eflags;
 } CPU_state;
 
 extern CPU_state cpu;
+
+
+// Update CF and OF manually!
+void update_PF_ZF_SF(uint32_t, int);
 
 static inline int check_reg_index(int index) {
 	assert(index >= 0 && index < 8);

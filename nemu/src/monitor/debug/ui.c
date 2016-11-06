@@ -40,7 +40,7 @@ static char* g_buffer = NULL;
 
 static int g_offset = 0;
 
-int read_input_for_lexer(char* buffer, size_t* bytes_read, int len) {
+int read_input_for_lexer(char* buffer, yy_size_t* bytes_read, int len) {
     size_t bytes_to_read = (size_t)len;
     int bytes_left = (int)strlen(g_buffer) - g_offset;
     int i;
@@ -50,7 +50,7 @@ int read_input_for_lexer(char* buffer, size_t* bytes_read, int len) {
     for (i = 0; i < bytes_to_read; i++) {
         buffer[i] = g_buffer[g_offset + i];
     }
-    *bytes_read = bytes_to_read;
+    *bytes_read = (yy_size_t)bytes_to_read;
     g_offset += bytes_to_read;
     return 0;
 }
@@ -110,6 +110,13 @@ static int cmd_info(char* args) {
                    regsl[i], cpu.gpr[i]._32,
                    regsl[i + 1], cpu.gpr[i + 1]._32);
         }
+        printf("eip: 0x%08x\tEFLAGS: 0x%08x\n",
+               cpu.eip, cpu.eflags.val);
+        printf("EFLAGS: CF\tPF\tZF\tSF\tIF\tDF\tOF\n");
+        printf("        %2d\t%2d\t%2d\t%2d\t%2d\t%2d\t%2d\n",
+               cpu.eflags.CF, cpu.eflags.PF, cpu.eflags.ZF,
+               cpu.eflags.SF, cpu.eflags.IF,
+               cpu.eflags.DF, cpu.eflags.OF);
     } else if (*args == 'w') {
         display_watch_points();
     } else {

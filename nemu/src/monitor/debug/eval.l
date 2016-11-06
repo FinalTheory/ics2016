@@ -1,13 +1,13 @@
 %{
 #include "eval-parse.h"
 #include "nemu.h"
-extern int read_input_for_lexer(char*, unsigned long *, int);
+extern int read_input_for_lexer(char*, yy_size_t *, int);
 #undef YY_INPUT
 #define YY_INPUT(b,r,s) read_input_for_lexer(b,&r,s)
 %}
 INT [0-9]+
-HEX 0x[0-9a-f]+
-REG \$e?(([a-d]x|sp|bp|si|di|ip)|([a-d](h|l)))
+HEX 0x[0-9a-f]{1,8}
+REG \$((e?(([a-d]x|sp|bp|si|di)|([a-d](h|l))))|(eflags|eip))
 WHITE	[ \t\n]|(\r\n)
 EQ "=="
 NEQ "!="
@@ -32,6 +32,9 @@ OR "||"
             found = 1;
         } else if (strncmp(reg, "eip", len) == 0) {
             *yylval = cpu.eip;
+            found = 1;
+        } else if (strncmp(reg, "eflags", len) == 0) {
+            *yylval = cpu.eflags.val;
             found = 1;
         }
     }

@@ -1,6 +1,7 @@
 entry
 .idea/
 obj/
+build/
 !Makefile*
 !*.[cSh]
 !test.sh

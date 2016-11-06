@@ -1,10 +1,9 @@
 #include "cpu/exec/template-start.h"
 
-#define instr and
+#define instr test
 
-static void do_execute () {
+static void do_execute() {
 	DATA_TYPE result = op_dest->val & op_src->val;
-	OPERAND_W(op_dest, result);
 	cpu.eflags.CF = 0;
 	cpu.eflags.OF = 0;
 	update_PF_ZF_SF((uint32_t)result, DATA_BYTE);

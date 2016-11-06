@@ -1,6 +1,8 @@
 #include "nemu.h"
+#include <stdlib.h>
 
 #define ENTRY_START 0x100000
+#define EFLAGS_INIT 0x000002
 
 extern uint8_t entry [];
 extern uint32_t entry_len;
@@ -60,10 +62,13 @@ static void init_ramdisk() {
 }
 #endif
 
-static void load_entry() {
+static void load_entry(char *exec_file) {
 	int ret;
-	FILE *fp = fopen("entry", "rb");
-	Assert(fp, "Can not open 'entry'");
+	char *entry_file = malloc(strlen(exec_file) + 10);
+	strcpy(entry_file, exec_file);
+	strcat(entry_file, "_entry");
+	FILE *fp = fopen(entry_file, "rb");
+	Assert(fp, "Can not open '%s'", entry_file);
 
 	fseek(fp, 0, SEEK_END);
 	size_t file_size = ftell(fp);
@@ -74,7 +79,7 @@ static void load_entry() {
 	fclose(fp);
 }
 
-void restart() {
+void restart(int argc, char *argv[]) {
 	/* Perform some initialization to restart a program */
 #ifdef USE_RAMDISK
 	/* Read the file with name `argv[1]' into ramdisk. */
@@ -82,10 +87,11 @@ void restart() {
 #endif
 
 	/* Read the entry code into memory. */
-	load_entry();
+	load_entry(argv[1]);
 
 	/* Set the initial instruction pointer. */
 	cpu.eip = ENTRY_START;
+	cpu.eflags.val = EFLAGS_INIT;
 
 	/* Initialize DRAM. */
 	init_ddr3();
