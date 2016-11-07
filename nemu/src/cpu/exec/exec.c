@@ -19,17 +19,17 @@ static make_helper(_2byte_esc);
 	
 /* 0x80 */
 make_group(group1_b,
-	add_i2rm_b, inv, inv, inv,
+	add_i2rm_b, inv, adc_i2rm_b, sbb_i2rm_b,
 	inv, sub_i2rm_b, inv, cmp_i2rm_b)
 
 /* 0x81 */
 make_group(group1_v,
-	add_i2rm_v, inv, inv, inv,
+	add_i2rm_v, inv, adc_i2rm_v, sbb_i2rm_v,
 	inv, sub_i2rm_v, inv, cmp_i2rm_v)
 
 /* 0x83 */
 make_group(group1_sx_v,
-	add_si2rm_v, inv, inv, inv,
+	add_si2rm_v, inv, adc_si2rm_v, sbb_si2rm_v,
 	inv, sub_si2rm_v, inv, cmp_si2rm_v)
 
 /* 0xc0 */
@@ -80,7 +80,7 @@ make_group(group4,
 /* 0xff */
 make_group(group5,
 	inv, inv, inv, inv, 
-	inv, inv, inv, inv)
+	inv, inv, push_rm_v, inv)
 
 make_group(group6,
 	inv, inv, inv, inv, 
@@ -90,18 +90,15 @@ make_group(group7,
 	inv, inv, inv, inv, 
 	inv, inv, inv, inv)
 
-
-/* TODO: Add more instructions!!! */
-
 helper_fun opcode_table [256] = {
 /* 0x00 */	add_r2rm_b, add_r2rm_v, add_rm2r_b, add_rm2r_v,
 /* 0x04 */	add_i2a_b, add_i2a_v, inv, inv,
 /* 0x08 */	inv, inv, inv, inv,
 /* 0x0c */	inv, inv, inv, _2byte_esc,
-/* 0x10 */	inv, inv, inv, inv,
-/* 0x14 */	inv, inv, inv, inv,
-/* 0x18 */	inv, inv, inv, inv,
-/* 0x1c */	inv, inv, inv, inv,
+/* 0x10 */	adc_r2rm_b, adc_r2rm_v, adc_rm2r_b, adc_rm2r_v,
+/* 0x14 */	adc_i2a_b, adc_i2a_v, inv, inv,
+/* 0x18 */	sbb_r2rm_b, sbb_r2rm_v, sbb_rm2r_b, sbb_rm2r_v,
+/* 0x1c */	sbb_i2a_b, sbb_i2a_v, inv, inv,
 /* 0x20 */	inv, inv, inv, inv,
 /* 0x24 */	inv, inv, inv, inv,
 /* 0x28 */	sub_r2rm_b, sub_r2rm_v, sub_rm2r_b, sub_rm2r_v,
@@ -116,27 +113,27 @@ helper_fun opcode_table [256] = {
 /* 0x4c */	inv, inv, inv, inv,
 /* 0x50 */	push_r_v, push_r_v, push_r_v, push_r_v,
 /* 0x54 */	push_r_v, push_r_v, push_r_v, push_r_v,
-/* 0x58 */	inv, inv, inv, inv,
-/* 0x5c */	inv, inv, inv, inv,
+/* 0x58 */	pop_r_v, pop_r_v, pop_r_v, pop_r_v,
+/* 0x5c */	pop_r_v, pop_r_v, pop_r_v, pop_r_v,
 /* 0x60 */	inv, inv, inv, inv,
 /* 0x64 */	inv, inv, operand_size, inv,
 /* 0x68 */	push_i_v, inv, push_i_b, inv,
 /* 0x6c */	inv, inv, inv, inv,
-/* 0x70 */	inv, inv, inv, inv,
-/* 0x74 */	je_i_b, inv, inv, inv,
-/* 0x78 */	inv, inv, inv, inv,
-/* 0x7c */	inv, inv, inv, inv,
+/* 0x70 */	jo_i_b, jno_i_b, jb_i_b, jae_i_b,
+/* 0x74 */	je_i_b, jne_i_b, jbe_i_b, ja_i_b,
+/* 0x78 */	js_i_b, jns_i_b, jp_i_b, jnp_i_b,
+/* 0x7c */	jl_i_b, jge_i_b, jle_i_b, jg_i_b,
 /* 0x80 */	group1_b, group1_v, inv, group1_sx_v, 
 /* 0x84 */	test_r2rm_b, test_r2rm_v, inv, inv,
 /* 0x88 */	mov_r2rm_b, mov_r2rm_v, mov_rm2r_b, mov_rm2r_v,
-/* 0x8c */	inv, inv, inv, inv,
+/* 0x8c */	inv, inv, inv, pop_rm_v,
 /* 0x90 */	inv, inv, inv, inv,
 /* 0x94 */	inv, inv, inv, inv,
-/* 0x98 */	inv, inv, inv, inv,
+/* 0x98 */	cbw_v, cwd_v, inv, inv,
 /* 0x9c */	inv, inv, inv, inv,
 /* 0xa0 */	mov_moffs2a_b, mov_moffs2a_v, mov_a2moffs_b, mov_a2moffs_v,
-/* 0xa4 */	inv, inv, inv, inv,
-/* 0xa8 */	test_i2a_b, test_i2a_v, inv, inv,
+/* 0xa4 */	movs_b, movs_v, cmps_b, cmps_v,
+/* 0xa8 */	test_i2a_b, test_i2a_v, stos_b, stos_v,
 /* 0xac */	inv, inv, inv, inv,
 /* 0xb0 */	mov_i2r_b, mov_i2r_b, mov_i2r_b, mov_i2r_b,
 /* 0xb4 */	mov_i2r_b, mov_i2r_b, mov_i2r_b, mov_i2r_b,
@@ -144,20 +141,20 @@ helper_fun opcode_table [256] = {
 /* 0xbc */	mov_i2r_v, mov_i2r_v, mov_i2r_v, mov_i2r_v, 
 /* 0xc0 */	group2_i_b, group2_i_v, inv, inv,
 /* 0xc4 */	inv, inv, mov_i2rm_b, mov_i2rm_v,
-/* 0xc8 */	inv, inv, inv, inv,
+/* 0xc8 */	inv, leave, inv, inv,
 /* 0xcc */	int3, inv, inv, inv,
 /* 0xd0 */	group2_1_b, group2_1_v, group2_cl_b, group2_cl_v,
 /* 0xd4 */	inv, inv, nemu_trap, inv,
 /* 0xd8 */	inv, inv, inv, inv,
 /* 0xdc */	inv, inv, inv, inv,
-/* 0xe0 */	inv, inv, inv, inv,
+/* 0xe0 */	inv, inv, inv, jcxz_v,
 /* 0xe4 */	inv, inv, inv, inv,
 /* 0xe8 */	call_i_v, inv, inv, inv,
 /* 0xec */	inv, inv, inv, inv,
 /* 0xf0 */	inv, inv, inv, inv,
 /* 0xf4 */	inv, inv, group3_b, group3_v,
 /* 0xf8 */	inv, inv, inv, inv,
-/* 0xfc */	inv, inv, group4, group5
+/* 0xfc */	cld, std, group4, group5
 };
 
 helper_fun _2byte_opcode_table [256] = {
@@ -193,22 +190,22 @@ helper_fun _2byte_opcode_table [256] = {
 /* 0x74 */	inv, inv, inv, inv,
 /* 0x78 */	inv, inv, inv, inv, 
 /* 0x7c */	inv, inv, inv, inv, 
-/* 0x80 */	inv, inv, inv, inv,
-/* 0x84 */	je_i_v, inv, inv, inv,
-/* 0x88 */	inv, inv, inv, inv, 
-/* 0x8c */	inv, inv, inv, inv, 
-/* 0x90 */	inv, inv, inv, inv,
-/* 0x94 */	inv, inv, inv, inv,
-/* 0x98 */	inv, inv, inv, inv, 
-/* 0x9c */	inv, inv, inv, inv, 
+/* 0x80 */	jo_i_v, jno_i_v, jb_i_v, jae_i_v,
+/* 0x84 */	je_i_v, jne_i_v, jbe_i_v, ja_i_v,
+/* 0x88 */	js_i_v, jns_i_v, jp_i_v, jnp_i_v,
+/* 0x8c */	jl_i_v, jge_i_v, jle_i_v, jg_i_v,
+/* 0x90 */	seto, setno, setb, setae,
+/* 0x94 */	sete, setne, setbe, seta,
+/* 0x98 */	sets, setns, setp, setnp,
+/* 0x9c */	setl, setge, setle, setg,
 /* 0xa0 */	inv, inv, inv, inv, 
 /* 0xa4 */	inv, inv, inv, inv,
 /* 0xa8 */	inv, inv, inv, inv,
 /* 0xac */	inv, inv, inv, inv,
 /* 0xb0 */	inv, inv, inv, inv, 
-/* 0xb4 */	inv, inv, inv, inv, 
+/* 0xb4 */	inv, inv, movzx_rm2r_b_v, movzx_rm2r_w_v,
 /* 0xb8 */	inv, inv, inv, inv,
-/* 0xbc */	inv, inv, inv, inv,
+/* 0xbc */	inv, inv, movsx_rm2r_b_v, movsx_rm2r_w_v,
 /* 0xc0 */	inv, inv, inv, inv,
 /* 0xc4 */	inv, inv, inv, inv,
 /* 0xc8 */	inv, inv, inv, inv,

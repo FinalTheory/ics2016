@@ -12,6 +12,7 @@
 #include "push-template.h"
 #undef DATA_BYTE
 
-// TODO: finish this
+
 make_helper_v(push_i)
 make_helper_v(push_r)
+make_helper_v(push_rm)

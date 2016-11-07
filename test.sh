@@ -1,6 +1,6 @@
 #!/bin/bash
 
-nemu=obj/nemu/nemu
+echo $nemu
 cmd="c\nq"
 
 for file in $@; do

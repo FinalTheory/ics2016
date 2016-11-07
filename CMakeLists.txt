@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.0)
-project(ics2015 C ASM)
+project(ics2016 C ASM)
 
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -MMD -Wall -Werror")
 
