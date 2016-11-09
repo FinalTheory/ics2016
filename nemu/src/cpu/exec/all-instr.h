@@ -28,6 +28,7 @@
 #include "logic/sar.h"
 #include "logic/shl.h"
 #include "logic/shr.h"
+#include "logic/shld.h"
 #include "logic/shrd.h"
 #include "logic/test.h"
 #include "logic/setcc.h"

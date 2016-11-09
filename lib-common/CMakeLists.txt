@@ -12,9 +12,21 @@ target_compile_options(
         -fno-stack-protector
 )
 
-# Add "uclibc" as imported library
-add_library(uclibc STATIC IMPORTED GLOBAL)
-set_property(
-        TARGET uclibc PROPERTY IMPORTED_LOCATION
-        ${CMAKE_CURRENT_SOURCE_DIR}/uclibc/lib/libc.a
-)
+# For Linux platform only
+if (${CMAKE_SYSTEM_NAME} MATCHES "Linux")
+    # Add "uclibc" as imported library
+    add_library(uclibc STATIC IMPORTED GLOBAL)
+    set_property(
+            TARGET uclibc PROPERTY IMPORTED_LOCATION
+            ${CMAKE_CURRENT_SOURCE_DIR}/uclibc/lib/libc.a
+    )
+
+    add_executable(float_test ${CMAKE_CURRENT_SOURCE_DIR}/FLOAT/FLOAT_test.c)
+    target_link_libraries(float_test float)
+
+    target_compile_options(
+            float_test PRIVATE
+            -m32 -fno-builtin
+            -fno-stack-protector
+    )
+endif ()
