@@ -1,5 +1,6 @@
 #include "cpu/exec/helper.h"
 #include "monitor/monitor.h"
+#include <stdlib.h>
 
 make_helper(inv) {
 	/* invalid opcode */
@@ -21,7 +22,7 @@ make_helper(inv) {
 * The machine is always right!\n\
 * Every line of untested code is always wrong!\33[0m\n\n", logo);
 
-	assert(0);
+	exit(-1);
 }
 
 make_helper(nemu_trap) {

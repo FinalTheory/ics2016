@@ -1,8 +1,10 @@
 #include "FLOAT.h"
+#include <stdint.h>
 
 FLOAT F_mul_F(FLOAT a, FLOAT b) {
-	nemu_assert(0);
-	return 0;
+	int64_t res = (int64_t)a * (int64_t)b;
+	res >>= SCALE;
+	return (FLOAT)res;
 }
 
 FLOAT F_div_F(FLOAT a, FLOAT b) {
@@ -23,9 +25,13 @@ FLOAT F_div_F(FLOAT a, FLOAT b) {
 	 * It is OK not to use the template above, but you should figure
 	 * out another way to perform the division.
 	 */
-
-	nemu_assert(0);
-	return 0;
+	FLOAT res, unused;
+	int64_t divisor = (int64_t)a << SCALE;
+	uint64_t mask = (uint32_t)-1;
+	int32_t high = (divisor & (~mask)) >> 32;
+	int32_t low = (divisor & mask);
+	asm volatile ("idiv %2" : "=a"(res), "=d"(unused) : "r"(b), "a"(low), "d"(high));
+	return res;
 }
 
 FLOAT f2F(float a) {
@@ -38,14 +44,14 @@ FLOAT f2F(float a) {
 	 * stack. How do you retrieve it to another variable without
 	 * performing arithmetic operations on it directly?
 	 */
-
-	nemu_assert(0);
-	return 0;
+    FLOAT v, f;
+    asm volatile ("movl (%%esp), %0" : "=r"(v));
+    f = v;
+	return f;
 }
 
 FLOAT Fabs(FLOAT a) {
-	nemu_assert(0);
-	return 0;
+    return a >= 0 ? a : -a;
 }
 
 /* Functions below are already implemented */

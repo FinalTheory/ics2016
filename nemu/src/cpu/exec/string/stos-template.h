@@ -5,13 +5,13 @@
 make_helper(concat3(instr, _, SUFFIX)) {
     swaddr_write((swaddr_t)reg_l(R_EDI),
                  DATA_BYTE, (DATA_TYPE)cpu.eax);
-    // update $esi, $edi
+    // update $edi
     if (cpu.eflags.DF) {
         reg_l(R_EDI) -= DATA_BYTE;
     } else {
         reg_l(R_EDI) += DATA_BYTE;
     }
-    print_asm(str(instr));
+    print_asm(__func__);
     return 1;
 }
 

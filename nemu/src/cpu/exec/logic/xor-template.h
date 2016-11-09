@@ -5,10 +5,9 @@
 static void do_execute () {
 	DATA_TYPE result = op_dest->val ^ op_src->val;
 	OPERAND_W(op_dest, result);
-
-	/* TODO: Update EFLAGS. */
-	panic("please implement me");
-
+	cpu.eflags.CF = 0;
+	cpu.eflags.OF = 0;
+	update_PF_ZF_SF((uint32_t)result, DATA_BYTE);
 	print_asm_template2();
 }
 

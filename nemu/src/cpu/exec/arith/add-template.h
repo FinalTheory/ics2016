@@ -15,7 +15,7 @@ static void do_execute() {
     // update flags
     cpu.eflags.CF = (uint8_t)(sum < x);
     cpu.eflags.OF = (uint8_t)((x_s < 0 && y_s < 0 && sum_s >= 0) ||
-                              (x_s >= 0 && y_s >= 0 && sum_s < 0));
+                              (x_s > 0 && y_s > 0 && sum_s <= 0));
     update_PF_ZF_SF(sum, DATA_BYTE);
     OPERAND_W(op_dest, sum);
     print_asm_template2();

@@ -34,11 +34,15 @@
 
 #include "control/call.h"
 #include "control/jcc.h"
+#include "control/ret.h"
+#include "control/jmp.h"
 
 #include "string/rep.h"
 #include "string/movs.h"
 #include "string/stos.h"
+#include "string/lods.h"
 #include "string/cmps.h"
+#include "string/scas.h"
 
 #include "misc/misc.h"
 

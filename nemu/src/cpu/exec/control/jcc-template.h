@@ -2,12 +2,12 @@
 
 static void do_execute() {
     if (condition) {
-        DATA_TYPE rel = (DATA_TYPE)op_src->val;
-        DATA_TYPE eip = (DATA_TYPE)cpu.eip;
+        int32_t rel = (DATA_TYPE_S)op_src->val;
         // update $eip
-        eip += rel;
-        uint32_t mask = (DATA_TYPE)~0;
-        cpu.eip = (cpu.eip & (~mask)) | ((uint32_t)eip & mask);
+        cpu.eip += rel;
+#if DATA_BYTE == 2
+        cpu.eip &= 0x0000ffffu;
+#endif
     }
     print_asm_template1();
 }

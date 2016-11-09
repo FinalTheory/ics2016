@@ -13,9 +13,9 @@ static void do_execute() {
     DATA_TYPE_S val_s = x_s - y_s;
     
     // update flags
-    cpu.eflags.CF = (uint8_t)(val > x);
-    cpu.eflags.OF = (uint8_t)((x_s < 0 && y_s > 0 && val_s > 0) ||
-                              (x_s > 0 && y_s < 0 && val_s < 0));
+    cpu.eflags.CF = (uint8_t)(y != 0 && val >= x);
+    cpu.eflags.OF = (uint8_t)((x_s < 0 && y_s >= 0 && val_s >= 0) ||
+                              (x_s >= 0 && y_s < 0 && val_s <= 0));
     update_PF_ZF_SF(val, DATA_BYTE);
     // Almost same as SUB, but do not save result here
     print_asm_template2();

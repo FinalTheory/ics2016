@@ -24,9 +24,14 @@ make_helper(rep) {
 				|| ops_decoded.opcode == 0xae	// scasb
 				|| ops_decoded.opcode == 0xaf	// scasw
 				);
-
-			/* TODO: Jump out of the while loop if necessary. */
-
+            // Exit by ZF only for REP (not REPZ)
+			if (ops_decoded.opcode == 0xa6	    // cmpsb
+                || ops_decoded.opcode == 0xa7	// cmpsw
+                || ops_decoded.opcode == 0xae	// scasb
+                || ops_decoded.opcode == 0xaf	// scasw
+			) {
+                if (!cpu.eflags.ZF) { break; }
+			}
 		}
 		len = 1;
 	}
@@ -36,7 +41,7 @@ make_helper(rep) {
 	sprintf(temp, "rep %s", assembly);
 	sprintf(assembly, "%s[cnt = %d]", temp, count);
 #endif
-	
+
 	return len + 1;
 }
 
@@ -46,14 +51,12 @@ make_helper(repnz) {
 		exec(eip + 1);
 		count ++;
 		cpu.ecx --;
-		assert(ops_decoded.opcode == 0xa6	// cmpsb
+		assert(ops_decoded.opcode == 0xa6	    // cmpsb
 				|| ops_decoded.opcode == 0xa7	// cmpsw
 				|| ops_decoded.opcode == 0xae	// scasb
 				|| ops_decoded.opcode == 0xaf	// scasw
 			  );
-
-		/* TODO: Jump out of the while loop if necessary. */
-
+		if (cpu.eflags.ZF) { break; }
 	}
 
 #ifdef DEBUG

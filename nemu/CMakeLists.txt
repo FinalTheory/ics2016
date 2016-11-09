@@ -43,6 +43,11 @@ else()
             eval PRIVATE
             -Wno-error
     )
+    target_compile_options(
+            nemu PRIVATE
+            -Wno-unused-variable
+            -Wno-unused-but-set-variable
+    )
 endif()
 
 target_link_libraries(nemu eval readline l)

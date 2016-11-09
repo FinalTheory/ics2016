@@ -9,11 +9,7 @@ static void do_execute () {
 	uint8_t count = src & 0x1f;
 	dest >>= count;
 	OPERAND_W(op_dest, dest);
-
-	/* There is no need to update EFLAGS, since no other instructions 
-	 * in PA will test the flags updated by this instruction.
-	 */
-
+	update_PF_ZF_SF(dest, DATA_BYTE);
 	print_asm_template2();
 }
 

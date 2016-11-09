@@ -14,8 +14,8 @@ static void do_execute() {
     
     // update flags
     cpu.eflags.CF = (uint8_t)(val > x);
-    cpu.eflags.OF = (uint8_t)((x_s < 0 && y_s > 0 && val_s > 0) ||
-                              (x_s > 0 && y_s < 0 && val_s < 0));
+    cpu.eflags.OF = (uint8_t)((x_s <= 0 && y_s >= 0 && val_s > 0) ||
+                              (x_s > 0 && y_s < 0 && val_s <= 0));
     update_PF_ZF_SF(val, DATA_BYTE);
     OPERAND_W(op_dest, val);
     print_asm_template2();

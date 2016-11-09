@@ -3,16 +3,20 @@
 #define instr call
 
 static void do_execute() {
-    DATA_TYPE rel = (DATA_TYPE)op_src->val;
-    DATA_TYPE eip = (DATA_TYPE)cpu.eip;
+    int32_t rel = (DATA_TYPE_S)op_src->val;
     // push $eip
     cpu.esp -= DATA_BYTE;
-    swaddr_write((swaddr_t)cpu.esp, DATA_BYTE, (uint32_t)eip);
+    // Notice that here we save DATA_BYTE + $eip
+    // this address is 1 or 2 byte before next instruction
+    // if operand size is 16, then "0F" prefix would also before "ret"
+    // which would advance $eip by 2, just to correct next instruction
+    swaddr_write((swaddr_t)cpu.esp, DATA_BYTE,
+                 (uint32_t)(cpu.eip + DATA_BYTE));
     // update $eip
-    eip += rel;
-    uint32_t mask = (DATA_TYPE)~0;
-    cpu.eip = (cpu.eip & (~mask)) | ((uint32_t)eip & mask);
-
+    cpu.eip += rel;
+#if DATA_BYTE == 2
+    cpu.eip &= 0x0000ffffu;
+#endif
     print_asm_template1();
 }
 
