@@ -8,6 +8,36 @@ static char *strtab = NULL;
 static Elf32_Sym *symtab = NULL;
 static int nr_symtab_entry;
 
+const char *query_address(swaddr_t addr) {
+	int i;
+	for (i = 0; i < nr_symtab_entry; i++)
+		if (ELF32_ST_TYPE(symtab[i].st_info) == STT_NOTYPE ||
+				ELF32_ST_TYPE(symtab[i].st_info) == STT_FUNC) {
+		swaddr_t start = symtab[i].st_value;
+		swaddr_t end = start + symtab[i].st_size;
+		if (start <= addr && addr < end) {
+			return strtab + symtab[i].st_name;
+		}
+	}
+	return "<unknown>";
+}
+
+swaddr_t query_symbol(const char* str) {
+	int i;
+	uint32_t offset;
+	for (i = 0; i < nr_symtab_entry; i++)
+		if (ELF32_ST_TYPE(symtab[i].st_info) == STT_OBJECT ||
+				ELF32_ST_TYPE(symtab[i].st_info) == STT_FUNC ||
+				ELF32_ST_TYPE(symtab[i].st_info) == STT_NOTYPE) {
+		offset = symtab[i].st_name;
+		char *name = strtab + offset;
+		if (strcmp(name, str) == 0) {
+			return symtab[i].st_value;
+		}
+	}
+	return (swaddr_t)~0;
+}
+
 void load_elf_tables(int argc, char *argv[]) {
 	int ret;
 	Assert(argc == 2, "run NEMU with format 'nemu [program]'");

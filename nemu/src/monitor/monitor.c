@@ -62,13 +62,10 @@ static void init_ramdisk() {
 }
 #endif
 
-static void load_entry(char *exec_file) {
+static void load_entry() {
 	int ret;
-	char *entry_file = malloc(strlen(exec_file) + 10);
-	strcpy(entry_file, exec_file);
-	strcat(entry_file, "_entry");
-	FILE *fp = fopen(entry_file, "rb");
-	Assert(fp, "Can not open '%s'", entry_file);
+	FILE *fp = fopen("entry", "rb");
+	Assert(fp, "Can not open 'entry'");
 
 	fseek(fp, 0, SEEK_END);
 	size_t file_size = ftell(fp);
@@ -87,7 +84,7 @@ void restart(int argc, char *argv[]) {
 #endif
 
 	/* Read the entry code into memory. */
-	load_entry(argv[1]);
+	load_entry();
 
 	/* Set the initial instruction pointer. */
 	cpu.eip = ENTRY_START;

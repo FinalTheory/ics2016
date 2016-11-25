@@ -8,6 +8,8 @@ add_subdirectory(nemu)
 
 add_subdirectory(lib-common)
 
+add_subdirectory(kernel)
+
 if (${CMAKE_SYSTEM_NAME} MATCHES "Linux")
     add_subdirectory(testcase)
 endif ()

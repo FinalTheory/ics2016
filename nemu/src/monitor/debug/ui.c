@@ -1,14 +1,25 @@
-#include "monitor/monitor.h"
 #include "monitor/expr.h"
 #include "monitor/watchpoint.h"
 #include "nemu.h"
 #include "eval-flex.h"
 
-#include <stdlib.h>
 #include <readline/readline.h>
 #include <readline/history.h>
 
 #define BYTE_PER_LINE 8
+
+
+typedef union {
+  struct {
+    swaddr_t prev_epb;
+    swaddr_t ret_addr;
+    uint32_t args[4];
+  };
+  uint32_t data[6];
+} stack_trace_t;
+
+
+extern const char *query_address(swaddr_t addr);
 
 void cpu_exec(uint32_t);
 
@@ -174,6 +185,24 @@ static int cmd_d(char* args) {
     return 0;
 }
 
+static int cmd_bt(char* args) {
+    assert(sizeof(stack_trace_t) == 24);
+    swaddr_t ebp = cpu.ebp;
+    stack_trace_t trace;
+    int idx = 0, i;
+    printf("#%d\t0x%08x in %s ()\n", idx++,
+           cpu.eip, query_address(cpu.eip));
+    while (ebp) {
+        for (i = 0; i < 6; i++) {
+            trace.data[i] = swaddr_read(ebp + i * 4, 4);
+        }
+        printf("#%d\t0x%08x in %s ()\n", idx++,
+               trace.ret_addr, query_address(trace.ret_addr));
+        ebp = trace.prev_epb;
+    }
+    return 0;
+}
+
 static struct {
     char* name;
     char* description;
@@ -189,7 +218,7 @@ static struct {
     {"x",    "Print memory value",                                cmd_x},
     {"w",    "Add watch point",                                   cmd_w},
     {"d",    "Delete watch point",                                cmd_d},
-    {"bt",   "Print stack trace", NULL},
+    {"bt",   "Print stack trace",                                 cmd_bt},
 };
 
 #define NR_CMD (sizeof(cmd_table) / sizeof(cmd_table[0]))

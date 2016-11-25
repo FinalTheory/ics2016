@@ -9,7 +9,7 @@ add_library(
 target_compile_options(
         float PRIVATE
         -m32 -fno-builtin
-        -fno-stack-protector
+        -fno-stack-protector -Wno-unused
 )
 
 # For Linux platform only

@@ -1,5 +1,8 @@
 # This file will be included by the Makefile under the project directory.
 
+FLOAT_CFLAGS_EXTRA := -c -m32 -fno-builtin -fno-stack-protector \
+						-Wno-format -I$(LIB_COMMON_DIR)
+
 FLOAT_O := $(FLOAT:.a=.o)
 FLOAT_VFPRINTF_O := $(dir $(FLOAT))FLOAT_vfprintf.o
 
@@ -8,9 +11,8 @@ FLOAT_A_OBJ := $(FLOAT_O) $(FLOAT_VFPRINTF_O)
 $(FLOAT): $(FLOAT_A_OBJ)
 	ar r $@ $^
 
-# TODO: complete the following rules
+$(FLOAT_O): lib-common/FLOAT/FLOAT.c
+	$(call make_command, $(CC), $(FLOAT_CFLAGS_EXTRA), cc $@, $<)
 
-$(FLOAT_O):
-
-$(FLOAT_VFPRINTF_O):
-
+$(FLOAT_VFPRINTF_O): lib-common/FLOAT/FLOAT_vfprintf.c
+	$(call make_command, $(CC), $(FLOAT_CFLAGS_EXTRA), cc $@, $<)

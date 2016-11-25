@@ -3,11 +3,12 @@
 #include "FLOAT.h"
 
 extern char _vfprintf_internal;
+extern char _ppfs_setargs;
 extern char _fpmaxtostr;
 extern int __stdio_fwrite(char *buf, int len, FILE *stream);
 
 __attribute__((used)) static int format_FLOAT(FILE *stream, FLOAT f) {
-	/* TODO: Format a FLOAT argument `f' and write the formating
+	/* Format a FLOAT argument `f' and write the formating
 	 * result to `stream'. Keep the precision of the formating
 	 * result with 6 by truncating. For example:
 	 *              f          result
@@ -15,13 +16,40 @@ __attribute__((used)) static int format_FLOAT(FILE *stream, FLOAT f) {
 	 *         0x00013333    "1.199996"
 	 */
 
-	char buf[80];
-	int len = sprintf(buf, "0x%08x", f);
-	return __stdio_fwrite(buf, len, stream);
+	/*
+	 * Sign flag
+	 */
+	char __buf[80], *str;
+	if (f >= 0) {
+		str = __buf;
+	} else {
+		__buf[0] = '-';
+		str = __buf + 1;
+		f = -f;
+	}
+	/*
+	 * Positive part
+	 */
+	int base = 0x00010000;
+	int positive = f / base;
+	f -= positive * base;
+	int l = sprintf(str, "%d", positive), n = 6;
+	/*
+	 * float part
+	 */
+	str[l++] = '.';
+	while (n--) {
+		f *= 10;
+		int bit = f / base;
+		f -= bit * base;
+		str[l++] = (char)(bit + '0');
+	}
+	str[l++] = 0;
+	return __stdio_fwrite(__buf, l, stream);
 }
 
 static void modify_vfprintf() {
-	/* TODO: Implement this function to hijack the formating of "%f"
+	/* This function to hijack the formating of "%f"
 	 * argument during the execution of `_vfprintf_internal'. Below
 	 * is the code section in _vfprintf_internal() relative to the
 	 * hijack.
@@ -45,6 +73,34 @@ static void modify_vfprintf() {
 	} else if (ppfs->conv_num <= CONV_S) {  /* wide char or string */
 #endif
 
+	// Dirty hack here
+	const int off_fldt = 0x02e4;
+	const int off_fldl = 0x02e8;
+	const int off_fstp = 0x02fc;
+	const int off_call = 0x0306;
+
+	const uint8_t nop = (uint8_t)0x90;
+
+	uint32_t *p1 = (void *)((uint32_t)&_vfprintf_internal + off_call + 1);
+
+	int8_t *p2 = (void *)((uint32_t)&_vfprintf_internal + off_fstp);
+
+	int8_t *p3 = (void *)((uint32_t)&_vfprintf_internal + off_fldt);
+
+	int8_t *p4 = (void *)((uint32_t)&_vfprintf_internal + off_fldl);
+
+	*p1 += (int)&format_FLOAT - (int)&_fpmaxtostr;
+
+	// shrink stack
+	p2[-1] -= 4;
+	// pushl (%edx)
+	p2[0] = (uint8_t)0xff;
+	p2[1] = (uint8_t)0x32;
+	// fill nops
+	p2[2] = nop;
+	p3[0] = p3[1] = nop;
+	p4[0] = p4[1] = nop;
+
 	/* You should modify the run-time binary to let the code above
 	 * call `format_FLOAT' defined in this source file, instead of
 	 * `_fpmaxtostr'. When this function returns, the action of the
@@ -67,7 +123,7 @@ static void modify_vfprintf() {
 }
 
 static void modify_ppfs_setargs() {
-	/* TODO: Implement this function to modify the action of preparing
+	/* Implement this function to modify the action of preparing
 	 * "%f" arguments for _vfprintf_internal() in _ppfs_setargs().
 	 * Below is the code section in _vfprintf_internal() relative to
 	 * the modification.
@@ -137,6 +193,14 @@ static void modify_ppfs_setargs() {
 		++p;
 	}
 #endif
+
+	const int offset = 0x71;
+	uint8_t *p = (void *)(&_ppfs_setargs + offset);
+	// jmp xxx
+	p[0] = 0xeb;
+	p[1] = 0x30;
+	// nop
+	p[2] = 0x90;
 
 	/* You should modify the run-time binary to let the `PA_DOUBLE'
 	 * branch execute the code in the `(PA_INT|PA_FLAG_LONG_LONG)'

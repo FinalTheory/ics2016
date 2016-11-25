@@ -2,6 +2,7 @@ entry
 .idea/
 obj/
 build/
+log.txt
 !Makefile*
 !*.[cSh]
 !test.sh

@@ -1,12 +1,14 @@
 %{
 #include "eval-parse.h"
 #include "nemu.h"
+extern swaddr_t query_symbol(const char* str);
 extern int read_input_for_lexer(char*, yy_size_t *, int);
 #undef YY_INPUT
 #define YY_INPUT(b,r,s) read_input_for_lexer(b,&r,s)
 %}
 INT [0-9]+
 HEX 0x[0-9a-f]{1,8}
+SYM [_a-zA-Z]+[_a-zA-Z0-9]*
 REG \$((e?(([a-d]x|sp|bp|si|di)|([a-d](h|l))))|(eflags|eip))
 WHITE	[ \t\n]|(\r\n)
 EQ "=="
@@ -16,6 +18,7 @@ OR "||"
 %%
 {INT}		{ sscanf(yytext, "%d", yylval); return NUMBER; }
 {HEX}		{ sscanf(yytext, "%x", yylval); return NUMBER; }
+{SYM}       { *yylval = query_symbol(yytext); return NUMBER; }
 {REG}		{
     int len = strlen(yytext), i;
     char *reg = yytext + 1;
