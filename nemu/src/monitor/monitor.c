@@ -92,4 +92,8 @@ void restart(int argc, char *argv[]) {
 
 	/* Initialize DRAM. */
 	init_ddr3();
+
+	/* Initialize Cache. */
+	init_L1();
+	init_L2();
 }

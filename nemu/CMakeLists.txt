@@ -37,6 +37,7 @@ if (${CMAKE_C_COMPILER_ID} MATCHES "Clang")
     )
     target_compile_options(
             nemu PRIVATE
+            -Wno-unused-variable
             -Wno-tautological-constant-out-of-range-compare
     )
 else()

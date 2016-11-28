@@ -1,5 +1,6 @@
 entry
 .idea/
+cmake-build-debug/
 obj/
 build/
 log.txt
