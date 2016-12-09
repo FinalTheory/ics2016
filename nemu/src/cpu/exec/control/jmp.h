@@ -9,4 +9,6 @@ make_helper(jmprel_i_v);
 
 make_helper(jmprm_rm_v);
 
+make_helper(ljmp);
+
 #endif //__JMP_H__

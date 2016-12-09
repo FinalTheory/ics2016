@@ -4,7 +4,7 @@
 
 make_helper(concat3(instr, _, SUFFIX)) {
     DATA_TYPE x = (DATA_TYPE)reg_l(R_EAX);
-    DATA_TYPE y = (DATA_TYPE)swaddr_read((swaddr_t)reg_l(R_EDI), DATA_BYTE);
+    DATA_TYPE y = (DATA_TYPE)swaddr_read((swaddr_t)reg_l(R_EDI), R_ES, DATA_BYTE);
     DATA_TYPE val = x - y;
     DATA_TYPE_S x_s = x;
     DATA_TYPE_S y_s = y;

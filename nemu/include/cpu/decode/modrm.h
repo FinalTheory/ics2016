@@ -8,8 +8,11 @@
 
 typedef union {
 	struct {
+		// Register index or memory
 		uint8_t R_M		:3;
+		// Register ID or
 		uint8_t reg		:3;
+		// Instruction mode
 		uint8_t mod		:2;
 	};
 	struct {

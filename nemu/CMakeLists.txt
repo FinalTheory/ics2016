@@ -19,7 +19,7 @@ BISON_TARGET(
         COMPILE_FLAGS "-d -v -y --debug --defines=${BISON_HEADER}"
 )
 
-include_directories(include ${CMAKE_CURRENT_BINARY_DIR})
+include_directories(include ${CMAKE_CURRENT_BINARY_DIR} ${CMAKE_SOURCE_DIR}/lib-common)
 
 add_library(eval STATIC ${FLEX_Lexer_OUTPUTS} ${BISON_Parser_OUTPUTS})
 

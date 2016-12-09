@@ -3,8 +3,8 @@
 #define instr cmps
 
 make_helper(concat3(instr, _, SUFFIX)) {
-    DATA_TYPE src = (DATA_TYPE)swaddr_read((swaddr_t)reg_l(R_ESI), DATA_BYTE);
-    DATA_TYPE dst = (DATA_TYPE)swaddr_read((swaddr_t)reg_l(R_EDI), DATA_BYTE);
+    DATA_TYPE src = (DATA_TYPE)swaddr_read((swaddr_t)reg_l(R_ESI), R_DS, DATA_BYTE);
+    DATA_TYPE dst = (DATA_TYPE)swaddr_read((swaddr_t)reg_l(R_EDI), R_ES, DATA_BYTE);
     DATA_TYPE_S src_s = src;
     DATA_TYPE_S dst_s = dst;
     DATA_TYPE val = src - dst;

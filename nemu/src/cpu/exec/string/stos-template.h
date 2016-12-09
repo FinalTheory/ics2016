@@ -3,7 +3,7 @@
 #define instr stos
 
 make_helper(concat3(instr, _, SUFFIX)) {
-    swaddr_write((swaddr_t)reg_l(R_EDI),
+    swaddr_write((swaddr_t)reg_l(R_EDI), R_ES,
                  DATA_BYTE, (DATA_TYPE)cpu.eax);
     // update $edi
     if (cpu.eflags.DF) {

@@ -1,7 +1,7 @@
 #include "cpu/exec/helper.h"
 
 #define make_lods_helper(name, type, reg) make_helper(name) { \
-    reg = (type)swaddr_read((swaddr_t)reg_l(R_ESI), sizeof(type)); \
+    reg = (type)swaddr_read((swaddr_t)reg_l(R_ESI), R_DS, sizeof(type)); \
     print_asm(__func__); \
     if (cpu.eflags.DF) { \
         reg_l(R_ESI) -= sizeof(type); \

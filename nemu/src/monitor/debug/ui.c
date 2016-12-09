@@ -5,6 +5,7 @@
 
 #include <readline/readline.h>
 #include <readline/history.h>
+#include <nemu.h>
 
 #define BYTE_PER_LINE 8
 
@@ -109,7 +110,7 @@ static int cmd_si(char* args) {
 }
 
 static int cmd_info(char* args) {
-    int i;
+    int i, k;
     if (args == NULL) {
         puts("command \"info\" should have sub command.");
         return 0;
@@ -123,6 +124,12 @@ static int cmd_info(char* args) {
         }
         printf("eip: 0x%08x\tEFLAGS: 0x%08x\n",
                cpu.eip, cpu.eflags.val);
+        for (k = 0; k < SREG_END - 2; k++) {
+            printf("%s: 0x%08x - 0x%08x\n", sreg_name(k), cpu.sreg_cache[k].base,
+                   cpu.sreg_cache[k].base + cpu.sreg_cache[k].limit);
+        }
+        printf("GDTR: [base] 0x%08x\t[limit] 0x%04x CR0: 0x%08x\n",
+               cpu.gdtr.base, cpu.gdtr.limit, cpu.cr0.val);
         printf("EFLAGS: CF\tPF\tZF\tSF\tIF\tDF\tOF\n");
         printf("        %2d\t%2d\t%2d\t%2d\t%2d\t%2d\t%2d\n",
                cpu.eflags.CF, cpu.eflags.PF, cpu.eflags.ZF,
@@ -156,7 +163,7 @@ static int cmd_x(char* args) {
     for (i = 0; i < n * sizeof(uint32_t); i++) {
         uint32_t dest = addr + i;
         if (i % BYTE_PER_LINE == 0) { printf("0x%08x:", dest); }
-        printf(" %02x", swaddr_read(dest, 1));
+        printf(" %02x", swaddr_read(dest, R_DS, 1));
         if ((i + 1) % BYTE_PER_LINE == 0) { puts(""); }
     }
     if ((i % BYTE_PER_LINE)) { puts(""); }
@@ -193,8 +200,12 @@ static int cmd_bt(char* args) {
     printf("#%d\t0x%08x in %s ()\n", idx++,
            cpu.eip, query_address(cpu.eip));
     while (ebp) {
-        for (i = 0; i < 6; i++) {
-            trace.data[i] = swaddr_read(ebp + i * 4, 4);
+        for (i = 0; i < sizeof(stack_trace_t) / 4; i++) {
+            if (seg_translate(ebp + i * 4, R_SS) >= HW_MEM_SIZE) {
+                trace.data[i] = 0;
+            } else {
+                trace.data[i] = swaddr_read(ebp + i * 4, R_SS, 4);
+            }
         }
         printf("#%d\t0x%08x in %s ()\n", idx++,
                trace.ret_addr, query_address(trace.ret_addr));

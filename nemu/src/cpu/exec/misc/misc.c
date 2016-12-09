@@ -23,3 +23,14 @@ make_helper(lea) {
 	print_asm("leal %s,%%%s", op_src->str, regsl[m.reg]);
 	return 1 + len;
 }
+
+make_helper(lgdt) {
+	ModR_M m;
+	m.val = (uint8_t)instr_fetch(eip + 1, 1);
+	int len = load_addr(eip + 1, &m, op_src);
+	swaddr_t addr = op_src->addr;
+	cpu.gdtr.limit = (uint16_t)lnaddr_read(addr, 2);
+	cpu.gdtr.base = lnaddr_read(addr + 2, 4);
+	print_asm("lgdt %s", op_src->str);
+	return 1 + len;
+}

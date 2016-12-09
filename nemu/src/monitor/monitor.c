@@ -76,6 +76,20 @@ static void load_entry() {
 	fclose(fp);
 }
 
+static void init_regs() {
+	/* Set the initial instruction pointer. */
+	cpu.eip = ENTRY_START;
+	/* Set the eflags register */
+	cpu.eflags.val = EFLAGS_INIT;
+	/* Set control flag */
+	cpu.cr0.val = 0;
+	/*
+	 * Initialize cache of CS
+	 */
+	cpu.sreg_cache[R_CS].base = 0x0u;
+	cpu.sreg_cache[R_CS].limit = ~0x0u;
+}
+
 void restart(int argc, char *argv[]) {
 	/* Perform some initialization to restart a program */
 #ifdef USE_RAMDISK
@@ -86,9 +100,8 @@ void restart(int argc, char *argv[]) {
 	/* Read the entry code into memory. */
 	load_entry();
 
-	/* Set the initial instruction pointer. */
-	cpu.eip = ENTRY_START;
-	cpu.eflags.val = EFLAGS_INIT;
+	/* Initialize Registers */
+	init_regs();
 
 	/* Initialize DRAM. */
 	init_ddr3();
