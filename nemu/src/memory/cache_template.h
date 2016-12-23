@@ -180,3 +180,25 @@ void make_func(write)(hwaddr_t addr, size_t len, uint32_t data) {
 
 #endif
 }
+
+int make_func(debug_search)(hwaddr_t addr) {
+  cache_line_t *line = make_func(search)(addr);
+  if (line) {
+    printf(str(LEVEL) " cache: ADDR[0x%08x] FLAG[0x%08x] valid(%u)"
+#if USE_DIRTY_BITS
+                      " dirty(%u)\n",
+#else
+                      "\n",
+#endif
+           addr, line->flag, line->valid
+#if USE_DIRTY_BITS
+    , line->dirty);
+#else
+    );
+#endif
+    return 1;
+  } else {
+    printf("Address 0x%08x not found in " str(LEVEL) " cache.\n", addr);
+    return 0;
+  }
+}

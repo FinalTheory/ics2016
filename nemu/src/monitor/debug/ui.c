@@ -214,6 +214,17 @@ static int cmd_bt(char* args) {
     return 0;
 }
 
+static int cmd_cache(char* args) {
+    hwaddr_t addr;
+    if (args == NULL || sscanf(args, "%x", &addr) != 1) {
+        puts("Invalid argument.");
+        return 0;
+    }
+    debug_search_L1(addr);
+    debug_search_L2(addr);
+    return 0;
+}
+
 static struct {
     char* name;
     char* description;
@@ -230,6 +241,7 @@ static struct {
     {"w",    "Add watch point",                                   cmd_w},
     {"d",    "Delete watch point",                                cmd_d},
     {"bt",   "Print stack trace",                                 cmd_bt},
+    {"cache","Search memory address in L1/L2 cache",              cmd_cache},
 };
 
 #define NR_CMD (sizeof(cmd_table) / sizeof(cmd_table[0]))
