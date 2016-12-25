@@ -29,12 +29,9 @@ add_irq_handle(int irq, void (*func)(void) ) {
 }
 
 void irq_handle(TrapFrame *tf) {
-	/* TODO: Re-organize the `TrapFrame' structure in `include/irq.h'
-	 * to match the trap frame built during `do_irq.S'. Remove the
-	 * following line after you are done.
+	/* The `TrapFrame' structure in `include/irq.h is organized'
+	 * to match the trap frame built during `do_irq.S'.
 	 */
-	panic("Have you re-organized the `TrapFrame' structure?");
-
 	int irq = tf->irq;
 
 	if (irq < 0) {

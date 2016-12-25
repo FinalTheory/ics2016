@@ -3,7 +3,12 @@
 
 make_helper(nop);
 make_helper(int3);
+make_helper(_int);
+make_helper(iret);
 make_helper(lea);
 make_helper(lgdt);
+make_helper(lidt);
+make_helper(cli);
+make_helper(sti);
 
 #endif

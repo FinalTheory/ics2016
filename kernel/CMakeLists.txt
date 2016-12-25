@@ -9,6 +9,7 @@ set(
 
 include_directories(include)
 include_directories(${CMAKE_SOURCE_DIR}/lib-common)
+include_directories(${CMAKE_SOURCE_DIR}/lib-common/uclibc/include)
 include_directories(${CMAKE_SOURCE_DIR}/nemu/include)
 
 # Create linker script

@@ -43,7 +43,7 @@ typedef struct {
 	struct {
 		uint16_t limit;
 		uint32_t base;
-	} gdtr;
+	} gdtr, idtr;
 	// A cache for segment registers
 	struct {
 		uint32_t limit;

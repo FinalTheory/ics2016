@@ -26,10 +26,16 @@ make_helper(inv) {
 }
 
 make_helper(nemu_trap) {
+  int i;
 	print_asm("nemu trap (eax = %d)", cpu.eax);
 
 	switch(cpu.eax) {
-		case 2:
+    case 2:
+        // ecx: buffer address
+        // edx: length
+        for (i = 0; i < cpu.edx; i++) {
+          putchar(lnaddr_read(cpu.ecx + i, 1));
+        }
 		   	break;
 
 		default:

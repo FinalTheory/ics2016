@@ -94,7 +94,9 @@ set_segment(SegDesc *ptr, uint32_t pl, uint32_t type) {
 
 /* This is similar with the one in start.S. However the previous one
  * cannot be accessed in user process, because its virtual address is
- * below 0xC0000000, and is not in the user process' address space. */
+ * below 0xC0000000, and is not in the user process' address space.
+ * And this one is installed in kernel space, which is available in user space.
+ */
 void
 init_segment(void) {
 	memset(gdt, 0, sizeof(gdt));

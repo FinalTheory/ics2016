@@ -142,6 +142,13 @@ void update_sreg_cache(uint8_t sreg, uint16_t val) {
 								(desc_entry.base_31_24 << 24);
 	cpu.sreg_cache[sreg].limit = desc_entry.limit_15_0 |
 								 (desc_entry.limit_19_16 << 16);
+	// Granularity bit specifies the units with which the LIMIT field is interpreted.
+	// When the bit is clear, the limit is interpreted in units of one byte;
+	// when set, the limit is interpreted in units of 4 Kilobytes (a page).
+	// Reference: section 5.1.1 of i386 manual
+	if (desc_entry.granularity) {
+		cpu.sreg_cache[sreg].limit <<= PAGE_OFFSET;
+	}
 }
 
 lnaddr_t seg_translate(swaddr_t addr, uint8_t sreg) {

@@ -14,6 +14,19 @@ static void sys_ioctl(TrapFrame *tf) {
 	tf->eax = fs_ioctl(tf->ebx, tf->ecx, (void *)tf->edx);
 }
 
+static void sys_write(TrapFrame *tf) {
+	int fd = tf->ebx;
+	char *buf = (void *)tf->ecx;
+	int len = tf->edx;
+	if (fd == 1 || fd == 2) {
+		asm volatile (".byte 0xd6" : : "a"(2), "c"(buf), "d"(len));
+		tf->eax = (uint32_t)len;
+	} else {
+		tf->eax = 0;
+	}
+	return;
+}
+
 void do_syscall(TrapFrame *tf) {
 	switch(tf->eax) {
 		/* The `add_irq_handle' system call is artificial. We use it to
@@ -29,6 +42,7 @@ void do_syscall(TrapFrame *tf) {
 
 		case SYS_brk: sys_brk(tf); break;
 		case SYS_ioctl: sys_ioctl(tf); break;
+		case SYS_write: sys_write(tf); break;
 
 		/* TODO: Add more system calls. */
 
