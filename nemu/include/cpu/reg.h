@@ -38,6 +38,7 @@ typedef struct {
     };
 	// Control register
 	CR0 cr0;
+	CR3 cr3;
 	// GDTR register
 	struct {
 		uint16_t limit;
@@ -84,6 +85,8 @@ static inline int check_reg_index(int index) {
 	assert(index >= 0 && index < 8);
 	return index;
 }
+
+void display_cpu_status();
 
 #define reg_l(index) (cpu.gpr[check_reg_index(index)]._32)
 #define reg_w(index) (cpu.gpr[check_reg_index(index)]._16)

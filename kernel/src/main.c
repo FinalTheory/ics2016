@@ -23,14 +23,29 @@ void init() {
 #ifdef IA32_PAGE
 	/* We must set up kernel virtual memory first because our kernel thinks it 
 	 * is located at 0xc0100000, which is set by the linking options in Makefile.
-	 * Before setting up correct paging, no global variable can be used. */
+	 * Before setting up correct paging, no global variable can be used,
+	 * because the address space for kernel is not mapped yet.
+	 */
 	init_page();
 
-	/* After paging is enabled, transform %esp to virtual address. */
+	/*
+	 * After paging is enabled, transform %esp to virtual address.
+	 * This is because there is no longer a mapping from physical address
+	 * to same value virtual address space in user address space.
+	 * If we still use old stack address here, then after context switch,
+	 * values stored in kernel stack context could not be accessed any more.
+	 */
 	asm volatile("addl %0, %%esp" : : "i"(KOFFSET));
 #endif
 
-	/* Jump to init_cond() to continue initialization. */
+	/*
+	 * Jump to init_cond() to continue initialization.
+	 * We could not simply use a normal function call here,
+	 * since the compiler would generate a relative call.
+	 * But we need $eip points to virtual address space.
+	 * Otherwise, when switching context to user mode,
+	 * we could not fetch new instruction any more.
+	 */
 	asm volatile("jmp *%0" : : "r"(init_cond));
 
 	panic("should not reach here");
@@ -73,15 +88,12 @@ void init_cond() {
 	 */
 	Log("Hello, NEMU world!");
 
-#if defined(IA32_PAGE) && defined(HAS_DEVICE)
 	/* Write some test data to the video memory. */
 	video_mapping_write_test();
-#endif
 
 	/* Load the program. */
 	uint32_t eip = loader();
-	
-#if defined(IA32_PAGE) && defined(HAS_DEVICE)
+
 	/* Read data in the video memory to check whether 
 	 * the test data is written sucessfully.
 	 */
@@ -89,11 +101,11 @@ void init_cond() {
 
 	/* Clear the test data we just written in the video memory. */
 	video_mapping_clear();
-#endif
 
 #ifdef IA32_PAGE
 	/* Set the %esp for user program, which is one of the
-	 * convention of the "advanced" runtime environment. */
+	 * convention of the "advanced" runtime environment.
+	 */
 	asm volatile("movl %0, %%esp" : : "i"(KOFFSET));
 #endif
 

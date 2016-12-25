@@ -21,17 +21,37 @@ make_helper_v(mov_rm2r)
 make_helper_v(mov_a2moffs)
 make_helper_v(mov_moffs2a)
 
-make_helper(mov_r2cr0) {
-    int len = decode_rm_l(eip + 1);
-    cpu.cr0.val = op_src->val;
-    print_asm("mov %s, %%cr0", op_src->str);
+make_helper(mov_r2cr) {
+    int len = decode_rm2r_l(eip + 1);
+    switch (op_dest->reg) {
+        case 0:
+            cpu.cr0.val = op_src->val;
+        break;
+        case 3:
+            cpu.cr3.val = op_src->val;
+            // Flush TLB cache at context switch
+            TLB_flush();
+        break;
+        default:
+            Assert(false, "Unknown control register.");
+    }
+    print_asm("mov %s, %%cr%d", op_src->str, op_dest->reg);
     return len + 1;
 }
 
-make_helper(mov_cr02r) {
-    int len = decode_rm_l(eip + 1);
-    write_operand_l(op_src, cpu.cr0.val);
-    print_asm("mov %%cr0, %s", op_src->str);
+make_helper(mov_cr2r) {
+    int len = decode_r2rm_l(eip + 1);
+    switch (op_dest->reg) {
+        case 0:
+            write_operand_l(op_dest, cpu.cr0.val);
+        break;
+        case 3:
+            write_operand_l(op_dest, cpu.cr3.val);
+        break;
+        default:
+            Assert(false, "Unknown control register.");
+    }
+    print_asm("mov %%cr%d, %s", op_src->reg, op_dest->str);
     return len + 1;
 }
 

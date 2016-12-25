@@ -21,6 +21,11 @@ void init_page(void) {
 
 	/* fill PDEs */
 	for (pdir_idx = 0; pdir_idx < PHY_MEM / PT_SIZE; pdir_idx ++) {
+		// The physical address space should be mapped
+		// exactly to numerically same virtual address space
+		// to provide access compatibility for those
+		// register states still with old values.
+		// But this mapping is only for kernel, not user sapce.
 		pdir[pdir_idx].val = make_pde(ptable);
 		pdir[pdir_idx + KOFFSET / PT_SIZE].val = make_pde(ptable);
 
@@ -44,7 +49,8 @@ void init_page(void) {
 	/*
 		===== referenced code for the inline assembly above =====
 
-		uint32_t pframe_addr = PHY_MEM - PAGE_SIZE;
+	  // Do not use unsigned int here!!!
+		int32_t pframe_addr = PHY_MEM - PAGE_SIZE;
 		ptable --;
 
 		// fill PTEs reversely

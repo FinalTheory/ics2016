@@ -81,11 +81,12 @@ static void init_regs() {
 	cpu.eip = ENTRY_START;
 	/* Set the eflags register */
 	cpu.eflags.val = EFLAGS_INIT;
-	/* Set control flag */
+	/* Init control flags */
 	cpu.cr0.val = 0;
-	/*
-	 * Initialize cache of CS
-	 */
+	cpu.cr3.val = 0;
+	/* Flush TLB cache */
+	TLB_flush();
+	/* Initialize cache of CS */
 	cpu.sreg_cache[R_CS].base = 0x0u;
 	cpu.sreg_cache[R_CS].limit = ~0x0u;
 }

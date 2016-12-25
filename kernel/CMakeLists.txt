@@ -50,15 +50,15 @@ set_property(
         "-m elf_i386 -T ${LD_SCRIPT}"
 )
 
-#set(MM_MALLOC_OBJ ${CMAKE_CURRENT_SOURCE_DIR}/src/memory/mm_malloc.o)
-#set_source_files_properties(
-#        ${MM_MALLOC_OBJ}
-#        PROPERTIES
-#        EXTERNAL_OBJECT true
-#        GENERATED true
-#)
+set(MM_MALLOC_OBJ ${CMAKE_CURRENT_SOURCE_DIR}/src/memory/mm_malloc.o)
+set_source_files_properties(
+        ${MM_MALLOC_OBJ}
+        PROPERTIES
+        EXTERNAL_OBJECT true
+        GENERATED true
+)
 
-target_link_libraries(kernel uclibc)
+target_link_libraries(kernel uclibc ${MM_MALLOC_OBJ})
 
 add_custom_target(
         entry

@@ -34,10 +34,16 @@ void init_L1();
 uint32_t read_L1(hwaddr_t addr, size_t len);
 void write_L1(hwaddr_t addr, size_t len, uint32_t data);
 int debug_search_L1(hwaddr_t addr);
+void get_stat_L1(uint64_t *hit, uint64_t *total);
 
 void init_L2();
 uint32_t read_L2(hwaddr_t addr, size_t len);
 void write_L2(hwaddr_t addr, size_t len, uint32_t data);
 int debug_search_L2(hwaddr_t addr);
+void get_stat_L2(uint64_t *hit, uint64_t *total);
+
+hwaddr_t page_translate(lnaddr_t addr, int *present);
+void TLB_flush();
+void TLB_get_stat(uint64_t *hit, uint64_t *total);
 
 #endif

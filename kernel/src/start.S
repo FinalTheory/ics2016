@@ -54,7 +54,7 @@
 	# Set up a stack for C code.
 		movl $0, %ebp
 		movl $(128 << 20), %esp
-		jmp init				# never return
+		jmp init				# relative call, never return
 
 	# GDT
 	.p2align 2                    # force 4 byte alignment

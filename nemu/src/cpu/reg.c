@@ -78,3 +78,25 @@ void update_PF_ZF_SF(uint32_t res, int data_byte) {
 	// SF
 	cpu.eflags.SF = (uint8_t)((res >> (data_bits - 1)) & 0x01);
 }
+
+void display_cpu_status() {
+	int i, k;
+	for (i = 0; i < 8; i += 2) {
+		printf("%s: 0x%08x\t%s: 0x%08x\n",
+					 regsl[i], cpu.gpr[i]._32,
+					 regsl[i + 1], cpu.gpr[i + 1]._32);
+	}
+	printf("eip: 0x%08x\tEFLAGS: 0x%08x\n",
+				 cpu.eip, cpu.eflags.val);
+	for (k = 0; k < SREG_END - 2; k++) {
+		printf("%s: 0x%08x - 0x%08x\n", sreg_name(k), cpu.sreg_cache[k].base,
+					 cpu.sreg_cache[k].base + cpu.sreg_cache[k].limit);
+	}
+	printf("GDTR: [base] 0x%08x\t[limit] 0x%04x CR0: 0x%08x\n",
+				 cpu.gdtr.base, cpu.gdtr.limit, cpu.cr0.val);
+	printf("EFLAGS: CF\tPF\tZF\tSF\tIF\tDF\tOF\n");
+	printf("        %2d\t%2d\t%2d\t%2d\t%2d\t%2d\t%2d\n",
+				 cpu.eflags.CF, cpu.eflags.PF, cpu.eflags.ZF,
+				 cpu.eflags.SF, cpu.eflags.IF,
+				 cpu.eflags.DF, cpu.eflags.OF);
+}

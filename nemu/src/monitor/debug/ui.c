@@ -88,12 +88,32 @@ int32_t eval(char* expr, int32_t* res) {
 }
 
 
+static void print_cache_stat() {
+    int i;
+    uint64_t TLB_hit, TLB_total;
+    uint64_t L1_hit, L1_total;
+    uint64_t L2_hit, L2_total;
+    TLB_get_stat(&TLB_hit, &TLB_total);
+    get_stat_L1(&L1_hit, &L1_total);
+    get_stat_L2(&L2_hit, &L2_total);
+    puts("\nCache Statistics");
+    for (i = 0; i < 70; i++) { putchar('-'); }
+    puts("");
+    printf("L1 cache\tHIT: %llu\tTOTAL: %llu\tRATE: %.6f%%\n",
+           L1_hit, L1_total, (double)L1_hit / L1_total * 100.);
+    printf("L2 cache\tHIT: %llu\tTOTAL: %llu\tRATE: %.6f%%\n",
+           L2_hit, L2_total, (double)L2_hit / L2_total * 100.);
+    printf("TLB cache\tHIT: %llu\tTOTAL: %llu\tRATE: %.6f%%\n",
+           TLB_hit, TLB_total, (double)TLB_hit / TLB_total * 100.);
+}
+
 static int cmd_c(char* args) {
     cpu_exec(-1);
     return 0;
 }
 
 static int cmd_q(char* args) {
+    print_cache_stat();
     return -1;
 }
 
@@ -117,24 +137,7 @@ static int cmd_info(char* args) {
     }
     while (*args && *args == ' ') { args++; }
     if (*args == 'r') {
-        for (i = 0; i < 8; i += 2) {
-            printf("%s: 0x%08x\t%s: 0x%08x\n",
-                   regsl[i], cpu.gpr[i]._32,
-                   regsl[i + 1], cpu.gpr[i + 1]._32);
-        }
-        printf("eip: 0x%08x\tEFLAGS: 0x%08x\n",
-               cpu.eip, cpu.eflags.val);
-        for (k = 0; k < SREG_END - 2; k++) {
-            printf("%s: 0x%08x - 0x%08x\n", sreg_name(k), cpu.sreg_cache[k].base,
-                   cpu.sreg_cache[k].base + cpu.sreg_cache[k].limit);
-        }
-        printf("GDTR: [base] 0x%08x\t[limit] 0x%04x CR0: 0x%08x\n",
-               cpu.gdtr.base, cpu.gdtr.limit, cpu.cr0.val);
-        printf("EFLAGS: CF\tPF\tZF\tSF\tIF\tDF\tOF\n");
-        printf("        %2d\t%2d\t%2d\t%2d\t%2d\t%2d\t%2d\n",
-               cpu.eflags.CF, cpu.eflags.PF, cpu.eflags.ZF,
-               cpu.eflags.SF, cpu.eflags.IF,
-               cpu.eflags.DF, cpu.eflags.OF);
+        display_cpu_status();
     } else if (*args == 'w') {
         display_watch_points();
     } else {
@@ -195,21 +198,21 @@ static int cmd_d(char* args) {
 static int cmd_bt(char* args) {
     assert(sizeof(stack_trace_t) == 24);
     swaddr_t ebp = cpu.ebp;
+    uint32_t eip = cpu.eip;
     stack_trace_t trace;
     int idx = 0, i;
-    printf("#%d\t0x%08x in %s ()\n", idx++,
-           cpu.eip, query_address(cpu.eip));
     while (ebp) {
         for (i = 0; i < sizeof(stack_trace_t) / 4; i++) {
-            if (seg_translate(ebp + i * 4, R_SS) >= HW_MEM_SIZE) {
-                trace.data[i] = 0;
-            } else {
-                trace.data[i] = swaddr_read(ebp + i * 4, R_SS, 4);
-            }
+            trace.data[i] = swaddr_read(ebp + i * 4, R_SS, 4);
         }
-        printf("#%d\t0x%08x in %s ()\n", idx++,
-               trace.ret_addr, query_address(trace.ret_addr));
+        printf("#%d\t0x%08x in %s(", idx++,
+               eip, query_address(eip));
+        for (i = 0; i < 4; i++) {
+            printf("%x, ", trace.args[i]);
+        }
+        puts("...)");
         ebp = trace.prev_epb;
+        eip = trace.ret_addr;
     }
     return 0;
 }
@@ -222,6 +225,26 @@ static int cmd_cache(char* args) {
     }
     debug_search_L1(addr);
     debug_search_L2(addr);
+    return 0;
+}
+
+static int cmd_page(char* args) {
+    lnaddr_t addr;
+    if (args == NULL || sscanf(args, "%x", &addr) != 1) {
+        puts("Invalid argument.");
+        return 0;
+    }
+    if (cpu.cr3.page_directory_base == 0) {
+        puts("Page directory is not configured.");
+        return 0;
+    }
+    int present;
+    hwaddr_t res = page_translate(addr, &present);
+    if (present) {
+        printf("Physical ADDR: 0x%08x\n", res);
+    } else {
+        printf("Address is not mapped.\n");
+    }
     return 0;
 }
 
@@ -242,6 +265,7 @@ static struct {
     {"d",    "Delete watch point",                                cmd_d},
     {"bt",   "Print stack trace",                                 cmd_bt},
     {"cache","Search memory address in L1/L2 cache",              cmd_cache},
+    {"page", "Convert linear address to physical address",        cmd_page},
 };
 
 #define NR_CMD (sizeof(cmd_table) / sizeof(cmd_table[0]))

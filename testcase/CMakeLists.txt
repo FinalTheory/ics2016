@@ -34,7 +34,7 @@ foreach (CASE_SRC ${TESTCASE_SOURCE_FILES})
     )
     if ("${SRC_EXT}" STREQUAL ".S")
         # For assembly sources, do not link any lib
-        set(ADD_LINK_FLAGS "-m elf_i386 -e _start -Ttext=0x00800000")
+        set(ADD_LINK_FLAGS "-m elf_i386 -e _start")
     else ()
         # For special C sources
         if ("${EXE_NAME}" STREQUAL "integral" OR
@@ -45,7 +45,7 @@ foreach (CASE_SRC ${TESTCASE_SOURCE_FILES})
 
         # For normal C sources
         target_link_libraries(${EXE_NAME} uclibc float)
-        set(ADD_LINK_FLAGS "-m elf_i386 -e main -Ttext-segment=0x00800000")
+        set(ADD_LINK_FLAGS "-m elf_i386 -e main")
     endif ()
     set_property(
             TARGET ${EXE_NAME}

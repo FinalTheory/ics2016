@@ -23,6 +23,8 @@
 
 /* 32bit x86 uses 4KB page size */
 #define PAGE_SIZE					4096
+#define PAGE_OFFSET				12
+#define TLB_SIZE					64
 #define NR_PDE						1024
 #define NR_PTE						1024
 #define PAGE_MASK					(4096 - 1)

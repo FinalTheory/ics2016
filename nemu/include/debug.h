@@ -21,9 +21,12 @@ extern FILE* log_fp;
 				__FILE__, __LINE__, __func__, ## __VA_ARGS__); \
 	} while(0)
 
+void display_cpu_status();
+
 #define Assert(cond, ...) \
 	do { \
 		if(!(cond)) { \
+			display_cpu_status(); \
 			fflush(stdout); \
 			fprintf(stderr, "\33[1;31m"); \
 			fprintf(stderr, __VA_ARGS__); \

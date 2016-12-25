@@ -6,6 +6,10 @@
 
 #define cache_name concat3(LEVEL, _, cache)
 
+#define cache_hit concat(cache_name, _hit)
+
+#define cache_total concat(cache_name, _total)
+
 #define BLOCK_SIZE        (1 << BLOCK_OFFSET_BITS)
 
 #define NUM_GROUPS        (1 << GROUP_OFFSET_BITS)
@@ -39,6 +43,14 @@ static struct {
   cache_group_t groups[NUM_GROUPS];
 } cache_name;
 
+static uint64_t cache_hit = 0;
+static uint64_t cache_total = 0;
+
+void make_func(get_stat)(uint64_t *hit, uint64_t *total) {
+  *hit = cache_hit;
+  *total = cache_total;
+}
+
 #define CACHE_DECODE_ADDR \
   cache_addr_t *cache_addr = (void *)&addr; \
   uint32_t blk_ofst = cache_addr->blk_ofst; \
@@ -63,11 +75,13 @@ void make_func(init)() {
 
 static inline
 cache_line_t *make_func(search)(hwaddr_t addr) {
+  cache_total++;
   CACHE_DECODE_ADDR
   int i;
   for (i = 0; i < NUM_LINES; i++) {
     cache_line_t *line = &grp->lines[i];
     if (line->valid && line->flag == flag) {
+      cache_hit++;
       return line;
     }
   }
