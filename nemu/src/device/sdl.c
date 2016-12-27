@@ -16,13 +16,22 @@ uint8_t (*pixel_buf) [SCREEN_COL];
 
 static uint64_t jiffy = 0;
 static struct itimerval it;
+static struct timeval time_stamp;
 static int device_update_flag = false;
 static int update_screen_flag = false;
 extern void timer_intr();
-extern void keyboard_intr();
+extern void keyboard_intr(uint8_t);
 extern void update_screen();
 
-static void timer_sig_handler(int signum) {
+useconds_t time_left() {
+	static struct timeval tv;
+	gettimeofday(&tv, NULL);
+	useconds_t passed = (useconds_t)(tv.tv_usec - time_stamp.tv_usec +
+					(tv.tv_sec - time_stamp.tv_sec) * 1000000);
+	return (it.it_value.tv_usec > passed) ? it.it_value.tv_usec - passed : 0;
+}
+
+void timer_sig_handler(int signum) {
 	jiffy ++;
 	timer_intr();
 
@@ -30,7 +39,8 @@ static void timer_sig_handler(int signum) {
 	if(jiffy % (TIMER_HZ / VGA_HZ) == 0) {
 		update_screen_flag = true;
 	}
-
+	// Update time stamp
+	gettimeofday(&time_stamp, NULL);
 	int ret = setitimer(ITIMER_VIRTUAL, &it, NULL);
 	Assert(ret == 0, "Can not set timer");
 }
@@ -47,23 +57,23 @@ void device_update() {
 	}
 
 	SDL_Event event;
-	while(SDL_PollEvent(&event)) {
-		// If a key was pressed
+  while(SDL_PollEvent(&event)) {
+    // If a key was pressed
 
-		uint32_t sym = event.key.keysym.sym;
-		if( event.type == SDL_KEYDOWN ) {
-			keyboard_intr(sym2scancode[sym >> 8][sym & 0xff]);
-		}
-		else if( event.type == SDL_KEYUP ) {
-			keyboard_intr(sym2scancode[sym >> 8][sym & 0xff] | 0x80);
-		}
+    uint32_t sym = event.key.keysym.sym;
+    if( event.type == SDL_KEYDOWN ) {
+      keyboard_intr(sym2scancode[sym >> 8][sym & 0xff]);
+    }
+    else if( event.type == SDL_KEYUP ) {
+      keyboard_intr(sym2scancode[sym >> 8][sym & 0xff] | 0x80);
+    }
 
-		// If the user has Xed out the window
-		if( event.type == SDL_QUIT ) {
-			//Quit the program
-			exit(0);
-		}
-	}
+    // If the user has Xed out the window
+    if( event.type == SDL_QUIT ) {
+      //Quit the program
+      exit(0);
+    }
+  }
 }
 
 void sdl_clear_event_queue() {
@@ -88,6 +98,8 @@ void init_sdl() {
 
 	SDL_WM_SetCaption("NEMU", NULL);
 
+  SDL_EnableUNICODE(1);
+
 	SDL_EnableKeyRepeat(SDL_DEFAULT_REPEAT_DELAY, SDL_DEFAULT_REPEAT_INTERVAL);
 
 	struct sigaction s;
@@ -97,7 +109,9 @@ void init_sdl() {
 	Assert(ret == 0, "Can not set signal handler");
 
 	it.it_value.tv_sec = 0;
+	// Wake up every 10ms
 	it.it_value.tv_usec = 1000000 / TIMER_HZ;
+	gettimeofday(&time_stamp, NULL);
 	ret = setitimer(ITIMER_VIRTUAL, &it, NULL);
 	Assert(ret == 0, "Can not set timer");
 }

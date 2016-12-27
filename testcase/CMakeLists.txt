@@ -7,7 +7,6 @@ set(
         <LINK_FLAGS> <OBJECTS> -o <TARGET> <LINK_LIBRARIES>"
 )
 
-set(UCLIB_PATH ${PROJECT_SOURCE_DIR}/lib-common/uclibc)
 include_directories(${PROJECT_SOURCE_DIR}/lib-common)
 include_directories(${UCLIB_PATH}/include)
 

@@ -1,7 +1,7 @@
 #include "irq.h"
-
 #include <sys/syscall.h>
 
+void serial_printc(char);
 void add_irq_handle(int, void (*)(void));
 uint32_t mm_brk(uint32_t);
 int fs_ioctl(int, uint32_t, void *);
@@ -15,11 +15,14 @@ static void sys_ioctl(TrapFrame *tf) {
 }
 
 static void sys_write(TrapFrame *tf) {
+	int i;
 	int fd = tf->ebx;
-	char *buf = (void *)tf->ecx;
+	uint8_t *buf = (void *)tf->ecx;
 	int len = tf->edx;
 	if (fd == 1 || fd == 2) {
-		asm volatile (".byte 0xd6" : : "a"(2), "c"(buf), "d"(len));
+		for (i = 0; i < len; i++) {
+			serial_printc(buf[i]);
+		}
 		tf->eax = (uint32_t)len;
 	} else {
 		tf->eax = 0;

@@ -2,7 +2,7 @@
 #define __VGA_H__
 
 #include "common.h"
-#include <SDL/SDL.h>
+#include <SDL.h>
 
 #define SCREEN_ROW 400
 #define SCREEN_COL 640

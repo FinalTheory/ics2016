@@ -2,6 +2,10 @@
 #include "cpu/decode/modrm.h"
 #include "x86-inc/mmu.h"
 #include <setjmp.h>
+#include <unistd.h>
+#include <errno.h>
+#include <signal.h>
+#include <sys/time.h>
 
 extern jmp_buf jbuf;
 
@@ -22,7 +26,6 @@ void raise_intr(uint8_t NO) {
 	cpu.esp -= sizeof(cpu.eflags);
 	swaddr_write((swaddr_t)cpu.esp, R_SS,
 							 sizeof(cpu.eflags), cpu.eflags.val);
-	cpu.eflags.IF = 0;
 
 	cpu.esp -= sizeof(cpu.cs);
 	swaddr_write((swaddr_t)cpu.esp, R_SS,
@@ -134,5 +137,36 @@ make_helper(cli) {
 make_helper(sti) {
 	cpu.eflags.IF = 1;
 	print_asm("sti");
+	return 1;
+}
+
+useconds_t time_left();
+void timer_sig_handler(int signum);
+static struct itimerval it = {
+				.it_value.tv_sec = 0,
+				.it_value.tv_usec = 0,
+				.it_interval.tv_sec = 0,
+				.it_interval.tv_usec = 0,
+};
+
+make_helper(hlt) {
+	Assert(cpu.eflags.IF, "Fatal: interrupt is disabled!");
+	// Once hlt is called, we manually disable the timer
+	int ret = setitimer(ITIMER_VIRTUAL, &it, NULL);
+	Assert(ret == 0, "Can not clear old timer.");
+	while (!cpu.INTR) {
+		// When process is sleeping, "SIGVTALRM" signal would not be delivered,
+		// so we should calculate the left time, cancel old timer,
+		// sleep for that time, and then manually call signal handler.
+		useconds_t t = time_left();
+		if (t) {
+			ret = usleep(t);
+			Assert(ret == 0, "usleep() failed with errno = %d", errno);
+		}
+		// Then we manually call signal handler
+		timer_sig_handler(SIGVTALRM);
+		// After this, there should be an interrupt,
+		// and this loop shall exit
+	}
 	return 1;
 }

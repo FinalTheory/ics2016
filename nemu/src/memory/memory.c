@@ -2,16 +2,27 @@
 #include "cpu/reg.h"
 #include "memory/memory.h"
 #include "x86-inc/mmu.h"
+#include "device/mmio.h"
 #include <stdlib.h>
 
 /* Memory accessing interfaces */
 
 uint32_t hwaddr_read(hwaddr_t addr, size_t len) {
-	return read_L1(addr, len) & (~0u >> ((4 - len) << 3));
+	int idx;
+	if ((idx = is_mmio(addr)) != -1) {
+		return mmio_read(addr, len, idx);
+	} else {
+		return read_L1(addr, len) & (~0u >> ((4 - len) << 3));
+	}
 }
 
 void hwaddr_write(hwaddr_t addr, size_t len, uint32_t data) {
-	write_L1(addr, len, data);
+	int idx;
+	if ((idx = is_mmio(addr)) != -1) {
+		mmio_write(addr, len, data, idx);
+	} else {
+		write_L1(addr, len, data);
+	}
 }
 
 typedef union {
@@ -102,29 +113,41 @@ hwaddr_t page_translate(lnaddr_t addr, int *present) {
 	return (entry.page_frame << PAGE_OFFSET) | trans.offset;
 }
 
-static inline void
+static inline int
 check_page_boundary(lnaddr_t addr, size_t len) {
 	uint32_t mask = ~((uint32_t)PAGE_MASK);
-	if ((addr & mask) != ((addr + len - 1) & mask)) {
-		fprintf(stderr, "Address 0x%08x with size=%zu "
-						"across page boundary.\n", addr, len);
-		assert(false);
-	}
+	return (addr & mask) != ((addr + len - 1) & mask);
 }
 
 uint32_t lnaddr_read(lnaddr_t addr, size_t len) {
-	check_page_boundary(addr, len);
+	int i;
 	if (cpu.cr0.paging) {
-		return hwaddr_read(page_translate(addr, NULL), len);
+		if (check_page_boundary(addr, len)) {
+			uint32_t data;
+			uint8_t *buf = (void *)&data;
+			for (i = 0; i < sizeof(data); i++) {
+				buf[i] = (uint8_t)hwaddr_read(page_translate(addr + i, NULL), 1);
+			}
+			return data;
+		} else {
+			return hwaddr_read(page_translate(addr, NULL), len);
+		}
 	} else {
 		return hwaddr_read(addr, len);
 	}
 }
 
 void lnaddr_write(lnaddr_t addr, size_t len, uint32_t data) {
-	check_page_boundary(addr, len);
+	int i;
 	if (cpu.cr0.paging) {
-		hwaddr_write(page_translate(addr, NULL), len, data);
+		if (check_page_boundary(addr, len)) {
+			uint8_t *buf = (void *)&data;
+			for (i = 0; i < sizeof(data); i++) {
+				hwaddr_write(page_translate(addr + i, NULL), 1, buf[i]);
+			}
+		} else {
+			hwaddr_write(page_translate(addr, NULL), len, data);
+		}
 	} else {
 		hwaddr_write(addr, len, data);
 	}

@@ -45,9 +45,9 @@ uint32_t loader() {
 			// Allocate physical memory for "p_memsz" bytes,
 			// and map them into specified virtual address space
 			uint8_t *phy_addr = (void *)mm_malloc(ph->p_vaddr, ph->p_memsz);
-      ramdisk_read(phy_addr,
-                   ELF_OFFSET_IN_DISK + ph->p_offset,
-                   ph->p_filesz);
+			ide_read(phy_addr,
+							 ELF_OFFSET_IN_DISK + ph->p_offset,
+							 ph->p_filesz);
       nemu_assert(ph->p_memsz >= ph->p_filesz);
       memset(phy_addr + ph->p_filesz,
              0, ph->p_memsz - ph->p_filesz);

@@ -10,7 +10,12 @@ set(
 include_directories(include)
 include_directories(${CMAKE_SOURCE_DIR}/lib-common)
 include_directories(${CMAKE_SOURCE_DIR}/lib-common/uclibc/include)
-include_directories(${CMAKE_SOURCE_DIR}/nemu/include)
+
+add_compile_options(
+        -m32 -O2 -fno-builtin
+        -fno-omit-frame-pointer
+        -fno-stack-protector
+)
 
 # Create linker script
 set(LD_SCRIPT ${CMAKE_CURRENT_BINARY_DIR}/user.ld)
@@ -37,13 +42,6 @@ add_custom_target(
 )
 
 add_dependencies(kernel extract_start)
-
-target_compile_options(
-        kernel PRIVATE
-        -m32 -O2 -fno-builtin
-        -fno-omit-frame-pointer
-        -fno-stack-protector
-)
 
 set_property(
         TARGET kernel

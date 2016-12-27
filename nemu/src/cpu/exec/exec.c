@@ -148,11 +148,11 @@ helper_fun opcode_table [256] = {
 /* 0xd8 */	inv, inv, inv, inv,
 /* 0xdc */	inv, inv, inv, inv,
 /* 0xe0 */	inv, inv, inv, jcxz_v,
-/* 0xe4 */	inv, inv, inv, inv,
+/* 0xe4 */	in_im_b, in_im_v, out_im_b, out_im_v,
 /* 0xe8 */	call_i_v, jmprel_i_v, ljmp, jmprel_i_b,
-/* 0xec */	inv, inv, inv, inv,
+/* 0xec */	in_b, in_v, out_b, out_v,
 /* 0xf0 */	inv, inv, repnz, rep,
-/* 0xf4 */	inv, inv, group3_b, group3_v,
+/* 0xf4 */	hlt, inv, group3_b, group3_v,
 /* 0xf8 */	inv, inv, cli, sti,
 /* 0xfc */	cld, std, group4, group5
 };
@@ -198,7 +198,7 @@ helper_fun _2byte_opcode_table [256] = {
 /* 0x94 */	sete, setne, setbe, seta,
 /* 0x98 */	sets, setns, setp, setnp,
 /* 0x9c */	setl, setge, setle, setg,
-/* 0xa0 */	inv, inv, inv, inv, 
+/* 0xa0 */	inv, inv, inv, bt_r2rm_v,
 /* 0xa4 */	shldi_v, shldi_v, inv, inv,
 /* 0xa8 */	inv, inv, inv, inv,
 /* 0xac */	shrdi_v, shrdi_v, inv, imul_rm2r_v,

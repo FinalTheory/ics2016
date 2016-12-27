@@ -1,5 +1,7 @@
 #include "prefix/prefix.h"
 
+#include "data-mov/in.h"
+#include "data-mov/out.h"
 #include "data-mov/mov.h"
 #include "data-mov/xchg.h"
 #include "data-mov/push.h"
@@ -32,6 +34,7 @@
 #include "logic/shrd.h"
 #include "logic/test.h"
 #include "logic/setcc.h"
+#include "logic/bt.h"
 
 #include "control/call.h"
 #include "control/jcc.h"

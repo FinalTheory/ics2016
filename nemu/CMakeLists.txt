@@ -19,7 +19,14 @@ BISON_TARGET(
         COMPILE_FLAGS "-d -v -y --debug --defines=${BISON_HEADER}"
 )
 
-include_directories(include ${CMAKE_CURRENT_BINARY_DIR} ${CMAKE_SOURCE_DIR}/lib-common)
+find_package(SDL REQUIRED)
+
+include_directories(
+        include
+        ${CMAKE_CURRENT_BINARY_DIR}
+        ${CMAKE_SOURCE_DIR}/lib-common
+        ${SDL_INCLUDE_DIR}
+)
 
 add_library(eval STATIC ${FLEX_Lexer_OUTPUTS} ${BISON_Parser_OUTPUTS})
 
@@ -49,7 +56,8 @@ else()
             nemu PRIVATE
             -Wno-unused-variable
             -Wno-unused-but-set-variable
+            -Wno-format
     )
 endif()
 
-target_link_libraries(nemu eval readline l)
+target_link_libraries(nemu eval readline ${SDL_LIBRARY} l)

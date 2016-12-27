@@ -1,3 +1,5 @@
+#include <SDL.h>
+
 void init_monitor(int, char *[]);
 void reg_test();
 void restart(int, char *[]);
