@@ -8,7 +8,6 @@ set(
 )
 
 include_directories(include)
-include_directories(src/typing/include)
 include_directories(${CMAKE_SOURCE_DIR}/lib-common)
 include_directories(${CMAKE_SOURCE_DIR}/lib-common/uclibc/include)
 
@@ -17,6 +16,7 @@ add_compile_options(
         -fno-omit-frame-pointer
         -fno-stack-protector
         -Wno-format
+        -Wno-unused-variable
 )
 
 # Glob sources
@@ -24,20 +24,23 @@ file(GLOB_RECURSE COMMON_SOURCE_FILES "src/common/*.c")
 file(GLOB_RECURSE TYPING_SOURCE_FILES "src/typing/*.c")
 file(GLOB_RECURSE PAL_SOURCE_FILES "src/nemu-pal/*.c")
 
-# Add kernel binary
-add_executable(typing ${COMMON_SOURCE_FILES} ${TYPING_SOURCE_FILES})
-
-set_property(
-        TARGET typing
-        APPEND PROPERTY LINK_FLAGS
-        "-m elf_i386"
-)
-
-target_link_libraries(
-        typing
+link_libraries(
         ${UCLIB_PATH}/lib/crt1.o
         ${UCLIB_PATH}/lib/crti.o
         float
         uclibc
         ${UCLIB_PATH}/lib/crtn.o
+)
+
+# Add kernel binary
+add_executable(typing ${COMMON_SOURCE_FILES} ${TYPING_SOURCE_FILES})
+add_executable(pal ${COMMON_SOURCE_FILES} ${PAL_SOURCE_FILES})
+
+target_include_directories(typing PRIVATE src/typing/include)
+target_include_directories(pal PRIVATE src/nemu-pal/include)
+
+set_property(
+        TARGET typing pal
+        APPEND PROPERTY LINK_FLAGS
+        "-m elf_i386"
 )

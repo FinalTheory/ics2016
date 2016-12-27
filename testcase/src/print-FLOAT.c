@@ -22,6 +22,13 @@ int main() {
 
 	sprintf(buf, "%f %d", FLOAT_ARG(0xfffecccd), 123456);
 	nemu_assert(strcmp(buf, "-1.199996 123456") == 0);
+
+	FLOAT a = f2F(1.2);
+	FLOAT b = f2F(0.333333);
+	printf("a = %f\n", a);
+	printf("b = %f\n", b);
+	printf("a * b = %f\n", F_mul_F(a, b));
+	printf("a^0.333 = %f\n", pow(a, b));
 #endif
 
 	return 0;

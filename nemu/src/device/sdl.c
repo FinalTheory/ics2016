@@ -7,6 +7,7 @@
 
 #include <sys/time.h>
 #include <signal.h>
+#include <unistd.h>
 
 SDL_Surface *real_screen;
 SDL_Surface *screen;

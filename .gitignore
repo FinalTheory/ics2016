@@ -1,9 +1,10 @@
 entry
 .idea/
-cmake-build-debug/
 obj/
-build/
+build*/
 log.txt
+nemu-pal
+game/src/nemu-pal/data/
 !Makefile*
 !*.[cSh]
 !test.sh
