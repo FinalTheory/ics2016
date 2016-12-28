@@ -1,5 +1,7 @@
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 
+remove_c_flag("-O3")
+
 # Add float lib
 add_library(
         float STATIC

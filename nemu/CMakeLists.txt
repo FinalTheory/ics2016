@@ -51,12 +51,15 @@ else()
     target_compile_options(
             eval PRIVATE
             -Wno-error
+            -Wno-unused-function
+            -Wno-implicit-function-declaration
     )
     target_compile_options(
             nemu PRIVATE
             -Wno-unused-variable
             -Wno-unused-but-set-variable
             -Wno-format
+            -Wno-strict-aliasing
     )
 endif()
 
