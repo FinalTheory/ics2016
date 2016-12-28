@@ -4,7 +4,8 @@ obj/
 build*/
 log.txt
 nemu-pal
-game/src/nemu-pal/data/
+game/src/nemu-pal/data/*
+!game/src/nemu-pal/data/generate.py
 !Makefile*
 !*.[cSh]
 !test.sh
