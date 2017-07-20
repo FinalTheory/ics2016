@@ -1,11 +1,8 @@
 #include "monitor/expr.h"
 #include "monitor/watchpoint.h"
 #include "nemu.h"
-#include "eval-flex.h"
-
+#include <stdlib.h>
 #include <readline/readline.h>
-#include <readline/history.h>
-#include <nemu.h>
 
 #define BYTE_PER_LINE 8
 
@@ -41,52 +38,6 @@ char* rl_gets() {
 
     return line_read;
 }
-
-extern int yyparse();
-
-extern int32_t eval_result;
-
-extern int eval_error;
-
-static char* g_buffer = NULL;
-
-static int g_offset = 0;
-
-int read_input_for_lexer(char* buffer, yy_size_t* bytes_read, int len) {
-    size_t bytes_to_read = (size_t)len;
-    int bytes_left = (int)strlen(g_buffer) - g_offset;
-    int i;
-    if (bytes_to_read > bytes_left) {
-        bytes_to_read = (size_t)bytes_left;
-    }
-    for (i = 0; i < bytes_to_read; i++) {
-        buffer[i] = g_buffer[g_offset + i];
-    }
-    *bytes_read = (yy_size_t)bytes_to_read;
-    g_offset += bytes_to_read;
-    return 0;
-}
-
-int32_t eval(char* expr, int32_t* res) {
-    if (expr == NULL || *expr == 0) {
-        puts("Should input expression.");
-        return -1;
-    }
-    g_buffer = strdup(expr);
-    g_offset = 0;
-    eval_error = 0;
-    eval_result = 0;
-    yyscan_t lexer;
-    yylex_init(&lexer);
-    yyparse();
-    *res = eval_result;
-    yylex_destroy(lexer);
-    free(g_buffer);
-    g_buffer = NULL;
-    if (eval_error) { return -1; }
-    return 0;
-}
-
 
 static void print_cache_stat() {
     int i;
@@ -147,21 +98,25 @@ static int cmd_info(char* args) {
 }
 
 static int cmd_p(char* args) {
-    int32_t res;
-    if (eval(args, &res) == 0) {
-        printf("0x%08x\n", res);
+    bool res = false;
+    uint32_t ret = expr(args, &res);
+    if (res == true) {
+        printf("0x%08x\n", ret);
+    } else {
+        puts(eval_error());
     }
     return 0;
 }
 
 static int cmd_x(char* args) {
-    int32_t res;
     int n, i;
     char* pos;
     char* num = strtok_r(args, " ", &pos);
-    char* expr = num + strlen(num) + 1;
+    char* e = num + strlen(num) + 1;
     sscanf(num, "%d", &n);
-    if (eval(expr, &res) == -1) { return 0; }
+    bool status = false;
+    uint32_t res = expr(e, &status);
+    if (status == false) { return 0; }
     swaddr_t addr = (swaddr_t)res;
     for (i = 0; i < n * sizeof(uint32_t); i++) {
         uint32_t dest = addr + i;
@@ -174,14 +129,15 @@ static int cmd_x(char* args) {
 }
 
 static int cmd_w(char* args) {
-    int32_t res;
-    char *expr = strdup(args);
-    if (eval(args, &res) == 0) {
+    char *e = strdup(args);
+    bool status = false;
+    uint32_t res = expr(e, &status);
+    if (status == true) {
         WP* node = new_wp();
-        node->expr = expr;
+        node->expr = e;
         node->last_val = res;
     } else {
-        puts("Add watch point failed: invalid expression.");
+        printf("Add watch point failed: invalid expression: %s\n", eval_error());
     }
     return 0;
 }

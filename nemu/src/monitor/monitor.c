@@ -1,4 +1,5 @@
 #include "nemu.h"
+#include "monitor/expr.h"
 #include <stdlib.h>
 
 #define ENTRY_START 0x100000
@@ -47,6 +48,8 @@ void init_monitor(int argc, char *argv[]) {
 
   /* Initialize SDL library */
   init_sdl();
+
+	test_expr(argc, argv);
 
 	/* Display welcome message. */
 	welcome();

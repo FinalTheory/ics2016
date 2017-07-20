@@ -40,7 +40,6 @@ swaddr_t query_symbol(const char* str) {
 
 void load_elf_tables(int argc, char *argv[]) {
 	int ret;
-	Assert(argc == 2, "run NEMU with format 'nemu [program]'");
 	exec_file = argv[1];
 
 	FILE *fp = fopen(exec_file, "rb");

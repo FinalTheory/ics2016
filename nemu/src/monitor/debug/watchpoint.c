@@ -22,10 +22,12 @@ void init_wp_pool() {
 }
 
 int check_watch_points() {
-    int32_t res;
+    uint32_t res = 0;
     WP* cur = head;
+    bool status = false;
     while (cur != NULL) {
-        eval(cur->expr, &res);
+        res = expr(cur->expr, &status);
+        Assert(status == true, "Eval failed with %s", eval_error());
         if (res != cur->last_val) {
             printf("Break on No.%d, old = 0x%08x, new = 0x%08x\n",
                    cur->NO, cur->last_val, res);
